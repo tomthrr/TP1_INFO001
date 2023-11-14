@@ -2,8 +2,8 @@ import socket
 import ssl
 
 # Chemin vers les fichiers de certificat et de clé privée
-certfile = 'nginx-reverse/ssl/serveur_http.cert.pem'
-keyfile = 'nginx-reverse/ssl/serveur_http.pem'
+certfile = 'serveur_http.cert.pem'
+keyfile = 'serveur_http.pem'
 
 # Configuration du contexte SSL
 context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
