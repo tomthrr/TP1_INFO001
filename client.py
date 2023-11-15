@@ -1,33 +1,25 @@
 import socket
 import ssl
 
-# Paramètres du client
-HOST = 'www.thierry.fr'  # Adresse IP du serveur
-PORT = 12345         # Port d'écoute du serveur
-CERTFILE = 'serveur_http.cert.pem'  # Chemin vers le certificat du client
-KEYFILE = 'serveur_http.pem'   # Chemin vers la clé privée du client
-
-# Création du socket client SSL
+# Création d'une socket TCP/IP
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-# Configuration du contexte SSL
-context = ssl.create_default_context(ssl.Purpose.SERVER_AUTH)
-context.load_cert_chain(certfile=CERTFILE, keyfile=KEYFILE)
-
 # Connexion au serveur
-secure_client_socket = context.wrap_socket(client_socket, server_hostname=HOST)
-secure_client_socket.connect((HOST, PORT))
+client_socket.connect(('localhost', 8080))
 
-print(f"Connecté au serveur {HOST}:{PORT}")
+# Configuration du contexte SSL
+ssl_context = ssl.create_default_context()
 
-while True:
-    # Envoi de données au serveur
-    message = input("Client: ")
-    secure_client_socket.send(message.encode('utf-8'))
+# Utilisation du contexte SSL pour sécuriser la connexion
+secure_client_socket = ssl_context.wrap_socket(client_socket, server_hostname='localhost')
 
-    # Attente de la réponse du serveur
-    data = secure_client_socket.recv(1024).decode('utf-8')
-    print(f"Serveur: {data}")
+# Envoi de données au serveur
+message = "Message du client : Bonjour serveur !"
+secure_client_socket.sendall(message.encode())
+
+# Réception des données du serveur
+data = secure_client_socket.recv(1024)
+print(f"Données reçues du serveur : {data.decode()}")
 
 # Fermeture de la connexion
 secure_client_socket.close()

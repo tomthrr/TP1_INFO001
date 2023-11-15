@@ -1,43 +1,32 @@
 import socket
 import ssl
 
-# Paramètres du serveur
-HOST = '127.0.0.1'  # Adresse IP du serveur
-PORT = 12345         # Port d'écoute du serveur
-CERTFILE = 'serveur_http.cert.pem'  # Chemin vers le certificat du client
-KEYFILE = 'serveur_http.pem'   # Chemin vers la clé privée du client
-
-# Création du socket serveur SSL
+# Création d'une socket TCP/IP
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server_socket.bind((HOST, PORT))
-server_socket.listen()
 
-# Configuration du contexte SSL
-context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
-context.load_cert_chain(certfile=CERTFILE, keyfile=KEYFILE)
+# Liaison de la socket au port
+server_socket.bind(('www.thierry.fr', 8080))
+server_socket.listen(5)
 
-print(f"Le serveur écoute sur {HOST}:{PORT}")
+print("Le serveur écoute...")
 
-# Attente de la connexion d'un client
+# Accepter les connexions entrantes
 client_socket, client_address = server_socket.accept()
-print(f"Connexion établie avec {client_address}")
 
-# Wrapping du socket dans le contexte SSL
-secure_client_socket = context.wrap_socket(client_socket, server_side=True)
+# Configuration du contexte SSL avec votre certificat et votre clé
+ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+ssl_context.load_cert_chain('serveur_http.cert.pem', 'serveur_http.pem')
 
-while True:
-    # Attente de données depuis le client
-    data = secure_client_socket.recv(1024).decode('utf-8')
+# Utilisation du contexte SSL pour sécuriser la connexion
+secure_client_socket = ssl_context.wrap_socket(client_socket, server_side=True)
 
-    if not data:
-        break
+# Réception des données du client
+data = secure_client_socket.recv(1024)
+print(f"Données reçues du client : {data.decode()}")
 
-    print(f"Client: {data}")
+# Envoi de données au client
+secure_client_socket.sendall("Message du serveur : Bonjour !".encode())
 
-    # Réponse au client
-    message = input("Serveur: ")
-    secure_client_socket.send(message.encode('utf-8'))
-
-# Fermeture des connexions
+# Fermeture de la connexion
 secure_client_socket.close()
 server_socket.close()
