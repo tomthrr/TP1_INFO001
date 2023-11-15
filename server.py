@@ -5,7 +5,7 @@ import ssl
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 # Liaison de la socket au port
-server_socket.bind(('www.thierry.fr', 8080))
+server_socket.bind(('127.0.0.1', 8080))
 server_socket.listen(5)
 
 print("Le serveur écoute...")
